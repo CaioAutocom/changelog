@@ -1,62 +1,63 @@
 <script setup lang="ts">
-import type { ColumnDef } from '@tanstack/vue-table'
+import { h, resolveComponent } from 'vue'
+import type { TableColumn } from '@nuxt/ui'
+import type { Row } from '@tanstack/vue-table'
+import { useClipboard } from '@vueuse/core'
 
-interface Payment {
+const UButton = resolveComponent('UButton')
+const UBadge = resolveComponent('UBadge')
+const UDropdownMenu = resolveComponent('UDropdownMenu')
+
+const toast = useToast()
+const { copy } = useClipboard()
+
+type Pessoa = {
   id: string
-  date: string
-  status: 'paid' | 'failed' | 'refunded'
-  email: string
-  amount: number
+  idAlternativo: string
+  nome: string
+  apelidoFantasia: string
+  fisJur: number
+  docCpfCnpj: string
+  docIdentidade: string
+  ativo: boolean
 }
 
-const data: Payment[] = [
-  {
-    id: '4600',
-    date: '2024-03-11T15:30:00',
-    status: 'paid',
-    email: 'james.anderson@example.com',
-    amount: 594
-  },
-  {
-    id: '4599',
-    date: '2024-03-11T10:10:00',
-    status: 'failed',
-    email: 'mia.white@example.com',
-    amount: 276
-  },
-  {
-    id: '4598',
-    date: '2024-03-11T08:50:00',
-    status: 'refunded',
-    email: 'william.brown@example.com',
-    amount: 315
-  },
-  {
-    id: '4597',
-    date: '2024-03-10T19:45:00',
-    status: 'paid',
-    email: 'emma.davis@example.com',
-    amount: 529
-  },
-  {
-    id: '4596',
-    date: '2024-03-10T15:55:00',
-    status: 'paid',
-    email: 'ethan.harris@example.com',
-    amount: 639
-  }
-]
+const data = ref<Pessoa[]>([
 
-const columns: ColumnDef<Payment>[] = [
+])
+
+const columns: TableColumn<Pessoa>[] = [
+   {
+    id: 'actions',
+    cell: ({ row }) => {
+      return h(
+        'div',
+        { class: 'text-left' },
+        h(
+          UDropdownMenu,
+          {
+            content : {
+              align: 'start'
+            },
+            // items: getRowItems(row),
+            'aria-label': 'Actions dropdown'
+          },
+          () =>
+            h(UButton, {
+              icon: 'i-lucide-ellipsis',
+              color: 'neutral',
+              variant: 'ghost',
+              class: 'ml-auto',
+              'aria-label': 'Actions dropdown'
+            })
+        )
+      )
+    }
+  },
   {
     accessorKey: 'id',
-    header: 'ID',
-    meta: {
-      class: {
-        th: 'text-center font-semibold',
-        td: 'text-center font-mono'
-      }
-    }
+    header: '#',
+    cell: ({ row }) => `#${row.getValue('id')}`
   },
   {
     accessorKey: 'date',
@@ -66,73 +67,78 @@ const columns: ColumnDef<Payment>[] = [
         day: 'numeric',
         month: 'short',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
+        hour12: false
       })
     }
   },
   {
     accessorKey: 'status',
     header: 'Status',
-    meta: {
-      class: {
-        th: 'text-center',
-        td: 'text-center'
-      }
-    },
     cell: ({ row }) => {
-      const status = row.getValue('status') as string
-      const colorMap = {
-        paid: 'text-success',
-        failed: 'text-error',
-        refunded: 'text-warning'
-      }
-      return h(
-        'span',
-        {
-          class: `font-semibold capitalize ${colorMap[status as keyof typeof colorMap]}`
-        },
-        status
+      const color = {
+        paid: 'success' as const,
+        failed: 'error' as const,
+        refunded: 'neutral' as const
+      }[row.getValue('status') as string]
+
+      return h(UBadge, { class: 'capitalize', variant: 'subtle', color }, () =>
+        row.getValue('status')
       )
     }
   },
   {
     accessorKey: 'email',
-    header: 'Email',
-    meta: {
-      class: {
-        th: 'text-left',
-        td: 'text-left'
-      }
-    }
+    header: 'Email'
   },
   {
     accessorKey: 'amount',
-    header: 'Amount',
-    meta: {
-      class: {
-        th: 'text-right font-bold text-primary',
-        td: 'text-right font-mono'
-      }
-    },
+    header: () => h('div', { class: 'text-right' }, 'Amount'),
     cell: ({ row }) => {
       const amount = Number.parseFloat(row.getValue('amount'))
+
       const formatted = new Intl.NumberFormat('en-US', {
         style: 'currency',
-        currency: 'USD'
+        currency: 'EUR'
       }).format(amount)
 
-      return h(
-        'span',
-        {
-          class: 'font-semibold text-success'
-        },
-        formatted
-      )
+      return h('div', { class: 'text-right font-medium' }, formatted)
     }
-  }
+  },
+
 ]
+
+// function getRowItems(row: Row<Payment>) {
+//   return [
+//     {
+//       type: 'label',
+//       label: 'Actions'
+//     },
+//     {
+//       label: 'Copy payment ID',
+//       onSelect() {
+//         copy(row.original.id)
+
+//         toast.add({
+//           title: 'Payment ID copied to clipboard!',
+//           color: 'success',
+//           icon: 'i-lucide-circle-check'
+//         })
+//       }
+//     },
+//     {
+//       type: 'separator'
+//     },
+//     {
+//       label: 'View customer'
+//     },
+//     {
+//       label: 'View payment details'
+//     }
+//   ]
+// }
 </script>
 
 <template>
-  <UTable :data="data" :columns="columns" class="w-full" />
+  <UTable :data="data" :columns="columns" class="flex-1 max-w-7xl mx-auto" />
 </template>
