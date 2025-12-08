@@ -34,5 +34,8 @@ const versions = ref([
 </script>
 
 <template>
-  <UChangelogVersions :versions="versions" class="mx-auto max-w-4xl" />
+  <UChangelogVersions
+    :versions="versions"
+    class="mx-auto max-w-4xl"
+  />
 </template>
