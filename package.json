@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "build": "nuxt build",
-    "dev": "nuxt dev --host",
+    "dev": "nuxt dev",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
@@ -16,6 +16,7 @@
     "@nuxt/ui": "^4.2.1",
     "@tanstack/vue-query": "^5.92.1",
     "nuxt": "^4.2.1",
+    "nuxt-auth-utils": "0.5.25",
     "zod": "^4.1.13"
   },
   "devDependencies": {
