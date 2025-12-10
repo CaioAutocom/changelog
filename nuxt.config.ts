@@ -1,12 +1,6 @@
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
-  modules: [
-    '@nuxt/eslint',
-    '@nuxt/ui',
-    '@compodium/nuxt',
-    'nuxt-auth-utils',
-    '@nuxt/image'
-  ],
+  modules: ['@nuxt/eslint', '@nuxt/ui', '@compodium/nuxt', 'nuxt-auth-utils', '@nuxt/image'],
   ssr: true,
   devtools: {
     enabled: true
@@ -15,6 +9,25 @@ export default defineNuxtConfig({
     port: 5173
   },
   css: ['~/assets/css/main.css'],
+  app: {
+    head: {
+      link: [
+        {
+          rel: 'preconnect',
+          href: 'https://fonts.googleapis.com'
+        },
+        {
+          rel: 'preconnect',
+          href: 'https://fonts.gstatic.com',
+          crossorigin: ''
+        },
+        {
+          rel: 'stylesheet',
+          href: 'https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap'
+        }
+      ]
+    }
+  },
   routeRules: {
     '/': { prerender: true }
   },

@@ -175,14 +175,15 @@ const tenantsOptions = computed(() =>
       </template>
 
       <form @submit.prevent="prelogin" class="space-y-4">
-        <UFormGroup label="Email" name="email" required>
-          <UInput class="w-full mb-2" v-model="credentials.email" type="email" placeholder="seu@email.com" icon="i-lucide-mail" size="lg" :disabled="loading" />
-        </UFormGroup>
+        <div class="space-y-2">
+          <ULabel for="email" required>Email</ULabel>
+          <UInput id="email" class="w-full" v-model="credentials.email" type="email" placeholder="seu@email.com" icon="i-lucide-mail" size="lg" :disabled="loading" />
+        </div>
 
-        <UFormGroup label="Senha" name="senha" required>
-          <template> </template>
-          <UInput class="w-full mb-2" v-model="credentials.senha" type="password" placeholder="••••••••" icon="i-lucide-key" size="lg" :disabled="loading" />
-        </UFormGroup>
+        <div class="space-y-2">
+          <ULabel for="senha" required>Senha</ULabel>
+          <UInput id="senha" class="w-full" v-model="credentials.senha" type="password" placeholder="••••••••" icon="i-lucide-key" size="lg" :disabled="loading" />
+        </div>
 
         <UButton type="submit" block size="lg" :loading="loading" :disabled="loading || !credentials.email || !credentials.senha">
           {{ loading ? 'Validando...' : 'Continuar' }}
@@ -235,9 +236,10 @@ const tenantsOptions = computed(() =>
       </template>
 
       <form @submit.prevent="loginFinal" class="space-y-4">
-        <UFormGroup label="Tenant" name="tenant" required>
-          <USelectMenu class="w-full mb-2" v-model="selectedTenant" :options="tenantsOptions" placeholder="Escolha um tenant..." size="lg" :disabled="loading" />
-        </UFormGroup>
+        <div class="space-y-2">
+          <ULabel for="tenant" required>Tenant</ULabel>
+          <USelectMenu id="tenant" class="w-full" v-model="selectedTenant" :options="tenantsOptions" placeholder="Escolha um tenant..." size="lg" :disabled="loading" />
+        </div>
 
         <div class="flex gap-2">
           <UButton type="submit" block size="lg" :loading="loading" :disabled="loading || !selectedTenant">
