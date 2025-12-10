@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { reactive, ref } from 'vue'
-import { useRouter } from 'vue-router'
-import type { Tenant, UsuarioLoginResponse } from '~/core/schemas/auth/authLogin.schema'
-const router = useRouter()
 
-const { fetch: refreshSession } = useUserSession()
+import type { Tenant, UsuarioLoginResponse } from '~/core/schemas/auth/authLogin.schema'
+
+const router = useRouter()
+const toast = useToast()
 
 // Dados do formulário
 const credentials = reactive({
@@ -14,7 +13,7 @@ const credentials = reactive({
 
 // Tenants recebidos no prelogin
 const tenants = ref<Tenant[]>([])
-const selectedTenant =  ref<string | null>(null)
+const selectedTenant = ref<string>('')
 
 // Controle de estado
 const etapa = ref<'login' | 'tenant'>('login')
@@ -32,14 +31,18 @@ async function prelogin() {
       }
     })
 
-    console.log('Resposta do prelogin:', resposta)
-
-    // resposta.tenants deve vir do seu schema
     tenants.value = resposta.tenants
     etapa.value = 'tenant'
-  } catch (err) {
-    console.log('Erro no prelogin:', err)
-    alert('Credenciais inválidas.')
+
+    toast.add({
+      title: 'Credenciais validadas',
+      description: 'Selecione um tenant para continuar',
+    })
+  } catch (err: any) {
+    toast.add({
+      title: 'Erro na autenticação',
+      description: err?.data?.message || 'Credenciais inválidas',
+    })
   } finally {
     loading.value = false
   }
@@ -48,7 +51,10 @@ async function prelogin() {
 // 2️⃣ LOGIN FINAL → gera token e cria sessão HttpOnly
 async function loginFinal() {
   if (!selectedTenant.value) {
-    alert('Selecione um tenant')
+    toast.add({
+      title: 'Tenant não selecionado',
+      description: 'Por favor, selecione um tenant',
+    })
     return
   }
 
@@ -63,63 +69,130 @@ async function loginFinal() {
       }
     })
 
-    // Atualiza sessão no client
-    await refreshSession()
+    toast.add({
+      title: 'Login realizado com sucesso',
+      description: 'Redirecionando...',
+    })
 
-    // Redireciona
+    // Redireciona para a página inicial
     router.push('/')
-  } catch (err) {
-    alert('Erro ao autenticar tenant.')
+  } catch (err: any) {
+    toast.add({
+      title: 'Erro ao autenticar',
+      description: err?.data?.message || 'Erro ao autenticar tenant',
+    })
   } finally {
     loading.value = false
   }
 }
+
+// Opções para o select de tenants
+const tenantsOptions = computed(() =>
+  tenants.value.map(t => ({
+    label: t.nome,
+    value: t.id
+  }))
+)
 </script>
 
 <template>
-  <div class="max-w-md mx-auto mt-10 p-6 border rounded">
+  <div class="min-h-screen flex items-center justify-center p-4 ">
+
 
     <!-- 💠 Etapa 1: Login com email e senha -->
-    <form v-if="etapa === 'login'" @submit.prevent="prelogin" class="flex flex-col gap-4">
-      <h2 class="text-xl font-semibold mb-2">Acessar Sistema</h2>
+    <UCard v-if="etapa === 'login'" class="w-full max-w-md ">
+      <template #header>
+        <div class="flex items-center gap-3">
+          <UIcon name="i-lucide-lock-keyhole" class="w-6 h-6" />
+          <h2 class="text-xl font-semibold">Acessar Sistema</h2>
+        </div>
+      </template>
 
-      <input
-        v-model="credentials.email"
-        type="email"
-        placeholder="Email"
-        class="border px-3 py-2 rounded"
-      />
+      <form @submit.prevent="prelogin" class="space-y-4">
 
-      <input
-        v-model="credentials.senha"
-        type="password"
-        placeholder="Senha"
-        class="border px-3 py-2 rounded"
-      />
+        <UFormGroup label="Email" name="email" required >
+          <UInput
+          class="w-full mb-2"
+            v-model="credentials.email"
+            type="email"
+            placeholder="seu@email.com"
+            icon="i-lucide-mail"
+            size="lg"
+            :disabled="loading"
+          />
+        </UFormGroup>
 
-      <button :disabled="loading" type="submit" class="bg-blue-600 text-white py-2 rounded">
-        {{ loading ? 'Validando...' : 'Continuar' }}
-      </button>
-    </form>
+        <UFormGroup label="Senha" name="senha" required>
+          <UInput
+          class="w-full mb-2"
+
+            v-model="credentials.senha"
+            type="password"
+            placeholder="••••••••"
+            icon="i-lucide-key"
+            size="lg"
+            :disabled="loading"
+          />
+        </UFormGroup>
+
+        <UButton
+          type="submit"
+          block
+          size="lg"
+          :loading="loading"
+          :disabled="loading || !credentials.email || !credentials.senha"
+        >
+          {{ loading ? 'Validando...' : 'Continuar' }}
+        </UButton>
+      </form>
+    </UCard>
 
     <!-- 💠 Etapa 2: Seleção de Tenant -->
-    <form v-else-if="etapa === 'tenant'" @submit.prevent="loginFinal" class="flex flex-col gap-4">
-      <h2 class="text-xl font-semibold mb-2">Selecione o Tenant</h2>
+    <UCard v-else-if="etapa === 'tenant'" class="w-full max-w-md">
+      <template #header>
+        <div class="flex items-center gap-3">
+          <UIcon name="i-lucide-building-2" class="w-6 h-6" />
+          <h2 class="text-xl font-semibold">Selecione o Tenant</h2>
+        </div>
+      </template>
 
-      <select
-        v-model="selectedTenant"
-        class="border px-3 py-2 rounded"
-      >
-        <option disabled value="">Escolha um tenant...</option>
-        <option v-for="t in tenants" :key="t.id" :value="t.id">
-          {{ t.nome }}
-        </option>
-      </select>
+      <form @submit.prevent="loginFinal" class="space-y-4">
+        <UFormGroup label="Tenant" name="tenant" required>
+          <USelectMenu
+           class="w-full mb-2"
+            v-model="selectedTenant"
+            :options="tenantsOptions"
+            placeholder="Escolha um tenant..."
+            size="lg"
+            :disabled="loading"
+          />
+        </UFormGroup>
 
-      <button :disabled="loading" type="submit" class="bg-green-600 text-white py-2 rounded">
-        {{ loading ? 'Entrando...' : 'Entrar' }}
-      </button>
-    </form>
+        <div class="flex gap-2">
 
+          <UButton
+            type="submit"
+            block
+            size="lg"
+            :loading="loading"
+            :disabled="loading || !selectedTenant"
+          >
+            {{ loading ? 'Entrando...' : 'Entrar' }}
+          </UButton>
+
+          <UButton
+            type="button"
+            variant="ghost"
+            block
+            size="lg"
+            :disabled="loading"
+            @click="etapa = 'login'"
+          >
+            Voltar
+          </UButton>
+
+        </div>
+      </form>
+    </UCard>
   </div>
 </template>
