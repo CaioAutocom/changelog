@@ -164,34 +164,36 @@ const tenantsOptions = computed(() =>
 </script>
 
 <template>
-  <div class="relative min-h-screen flex items-center justify-center p-4">
+  <div class="relative min-h-screen flex items-center justify-center px-4 py-8 sm:px-6 lg:px-8">
     <!-- 💠 Etapa 1: Login com email e senha -->
-    <UCard v-if="etapa === 'login'" class="w-full max-w-md">
+    <UCard v-if="etapa === 'login'" class="w-full max-w-sm sm:max-w-md">
       <template #header>
-        <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-lock-keyhole" class="w-6 h-6" />
-          <h2 class="text-xl font-semibold">Acessar Sistema</h2>
+        <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
+          <UIcon name="i-lucide-lock-keyhole" class="w-5 h-5 sm:w-6 sm:h-6" />
+          <h2 class="text-lg sm:text-xl font-semibold text-center sm:text-left">Acessar Sistema</h2>
         </div>
       </template>
 
-      <form @submit.prevent="prelogin" class="space-y-4">
+      <form @submit.prevent="prelogin" class="space-y-4 sm:space-y-5">
         <div class="space-y-2">
-          <ULabel for="email" required>Email</ULabel>
-          <UInput id="email" class="w-full" v-model="credentials.email" type="email" placeholder="seu@email.com" icon="i-lucide-mail" size="lg" :disabled="loading" />
+          <ULabel for="email" required class="text-sm sm:text-base">Email</ULabel>
+          <UInput id="email" class="w-full" v-model="credentials.email" type="email" placeholder="seu@email.com" icon="i-lucide-mail" size="md" :disabled="loading" />
         </div>
 
         <div class="space-y-2">
-          <ULabel for="senha" required>Senha</ULabel>
-          <UInput id="senha" class="w-full" v-model="credentials.senha" type="password" placeholder="••••••••" icon="i-lucide-key" size="lg" :disabled="loading" />
+          <ULabel for="senha" required class="text-sm sm:text-base">Senha</ULabel>
+          <UInput id="senha" class="w-full" v-model="credentials.senha" type="password" placeholder="••••••••" icon="i-lucide-key" size="md" :disabled="loading" />
         </div>
 
-        <UButton type="submit" block size="lg" :loading="loading" :disabled="loading || !credentials.email || !credentials.senha">
+        <UButton type="submit" block size="md" class="sm:size-lg" :loading="loading" :disabled="loading || !credentials.email || !credentials.senha">
           {{ loading ? 'Validando...' : 'Continuar' }}
         </UButton>
-        <div class="flex gap-4">
+
+        <!-- Componentes de exemplo: tree e grid -->
+        <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6">
           <!-- tree -->
-          <UCollapsible class="flex flex-col gap-2 w-48">
-            <UButton label="Selecione categoria superior" color="neutral" variant="subtle" trailing-icon="i-lucide-chevron-down" block />
+          <UCollapsible class="flex flex-col gap-2 w-full sm:w-48">
+            <UButton label="Categoria superior" color="neutral" variant="subtle" trailing-icon="i-lucide-chevron-down" block size="sm" />
 
             <template #content>
               <UTree v-model="value" :as="{ link: 'div' }" :items="items" @select="onSelect">
@@ -203,50 +205,54 @@ const tenantsOptions = computed(() =>
           </UCollapsible>
 
           <!-- grid -->
-          <UCollapsible class="flex flex-col gap-2 w-48">
-            <UButton label="Grid" color="neutral" variant="subtle" trailing-icon="i-lucide-chevron-down" block />
+          <UCollapsible class="flex flex-col gap-2 w-full sm:w-48">
+            <UButton label="Grid" color="neutral" variant="subtle" trailing-icon="i-lucide-chevron-down" block size="sm" />
 
             <template #content>
-              <UTable :data="data" class="flex-1" />
+              <div class="overflow-x-auto">
+                <UTable :data="data" class="flex-1" />
+              </div>
             </template>
           </UCollapsible>
         </div>
       </form>
 
-      <UPopover>
-        <UButton label="Open" color="neutral" variant="subtle" trailing-icon="i-lucide-chevron-down" />
+      <div class="mt-4">
+        <UPopover>
+          <UButton label="Open" color="neutral" variant="subtle" trailing-icon="i-lucide-chevron-down" size="sm" />
 
-        <template #content>
-          <UTree v-model="value" :as="{ link: 'div' }" :items="items" @select="onSelect">
-            <template #item-leading="{ selected, indeterminate, handleSelect }">
-              <UCheckbox :model-value="indeterminate ? 'indeterminate' : selected" tabindex="-1" @change="handleSelect" @click.stop />
-            </template>
-          </UTree>
-        </template>
-      </UPopover>
+          <template #content>
+            <UTree v-model="value" :as="{ link: 'div' }" :items="items" @select="onSelect">
+              <template #item-leading="{ selected, indeterminate, handleSelect }">
+                <UCheckbox :model-value="indeterminate ? 'indeterminate' : selected" tabindex="-1" @change="handleSelect" @click.stop />
+              </template>
+            </UTree>
+          </template>
+        </UPopover>
+      </div>
     </UCard>
 
     <!-- 💠 Etapa 2: Seleção de Tenant -->
-    <UCard v-else-if="etapa === 'tenant'" class="w-full max-w-md">
+    <UCard v-else-if="etapa === 'tenant'" class="w-full max-w-sm sm:max-w-md">
       <template #header>
-        <div class="flex items-center gap-3">
-          <UIcon name="i-lucide-building-2" class="w-6 h-6" />
-          <h2 class="text-xl font-semibold">Selecione o Tenant</h2>
+        <div class="flex flex-col sm:flex-row items-center gap-2 sm:gap-3">
+          <UIcon name="i-lucide-building-2" class="w-5 h-5 sm:w-6 sm:h-6" />
+          <h2 class="text-lg sm:text-xl font-semibold text-center sm:text-left">Selecione o Tenant</h2>
         </div>
       </template>
 
-      <form @submit.prevent="loginFinal" class="space-y-4">
+      <form @submit.prevent="loginFinal" class="space-y-4 sm:space-y-5">
         <div class="space-y-2">
-          <ULabel for="tenant" required>Tenant</ULabel>
-          <USelectMenu id="tenant" class="w-full" v-model="selectedTenant" :options="tenantsOptions" placeholder="Escolha um tenant..." size="lg" :disabled="loading" />
+          <ULabel for="tenant" required class="text-sm sm:text-base">Tenant</ULabel>
+          <USelectMenu id="tenant" class="w-full" v-model="selectedTenant" :options="tenantsOptions" placeholder="Escolha um tenant..." size="md" :disabled="loading" />
         </div>
 
-        <div class="flex gap-2">
-          <UButton type="submit" block size="lg" :loading="loading" :disabled="loading || !selectedTenant">
+        <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
+          <UButton type="submit" block size="md" class="sm:size-lg" :loading="loading" :disabled="loading || !selectedTenant">
             {{ loading ? 'Entrando...' : 'Entrar' }}
           </UButton>
 
-          <UButton type="button" variant="ghost" block size="lg" :disabled="loading" @click="etapa = 'login'"> Voltar </UButton>
+          <UButton type="button" variant="ghost" block size="md" class="sm:size-lg" :disabled="loading" @click="etapa = 'login'"> Voltar </UButton>
         </div>
       </form>
     </UCard>
