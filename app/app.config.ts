@@ -3,6 +3,7 @@ export default defineAppConfig({
     colors: {
       primary: 'green',
       neutral: 'slate'
-    }
+    },
+    radius: 0.5
   }
 })
