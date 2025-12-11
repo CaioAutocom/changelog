@@ -50,7 +50,7 @@ const credentials = reactive({
 
 // Tenants recebidos no prelogin
 const tenants = ref<Tenant[]>([])
-const selectedTenant = ref<string>('')
+const selectedTenant = ref<{ value: string; label: string } | undefined>(undefined)
 
 // Controle de estado
 const etapa = ref<'login' | 'tenant'>('login')
@@ -133,7 +133,7 @@ async function loginFinal() {
       body: {
         email: credentials.email,
         senha: credentials.senha,
-        tenantId: selectedTenant.value
+        tenantId: selectedTenant.value.value
       }
     })
 
@@ -142,8 +142,8 @@ async function loginFinal() {
       description: 'Redirecionando...'
     })
 
-    // Redireciona para a página inicial
-    router.push('/')
+    // Redireciona para o dashboard
+    router.push('/dashboard')
   } catch (err: any) {
     toast.add({
       title: 'Erro ao autenticar',
@@ -155,12 +155,7 @@ async function loginFinal() {
 }
 
 // Opções para o select de tenants
-const tenantsOptions = computed(() =>
-  tenants.value.map((t) => ({
-    label: t.nome,
-    value: t.id
-  }))
-)
+const tenantsOptions = computed(() => tenants.value.map((t) => ({ value: t.id, label: t.nome })))
 </script>
 
 <template>
@@ -244,7 +239,16 @@ const tenantsOptions = computed(() =>
       <form @submit.prevent="loginFinal" class="space-y-4 sm:space-y-5">
         <div class="space-y-2">
           <ULabel for="tenant" required class="text-sm sm:text-base">Tenant</ULabel>
-          <USelectMenu id="tenant" class="w-full" v-model="selectedTenant" :options="tenantsOptions" placeholder="Escolha um tenant..." size="md" :disabled="loading" />
+          <USelectMenu
+            class="w-full h-full"
+            v-model="selectedTenant"
+            :items="tenantsOptions"
+            placeholder="Escolha um tenant..."
+            size="md"
+            :disabled="loading"
+            value-attribute="value"
+            option-attribute="label"
+          />
         </div>
 
         <div class="flex flex-col sm:flex-row gap-2 sm:gap-3">
